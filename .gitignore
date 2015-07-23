@@ -1,0 +1,10 @@
+*
+!*/
+!.gitignore
+!README.md
+!jaxb4osm-shared-resources/src/main/resources/maps/*/map.osm
+!pom.xml
+!**.java
+!license.txt
+
+
