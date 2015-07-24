@@ -63,9 +63,7 @@ public class OsmWays2WaySectionsAdapter {
     private final WayElementFilter filter;
     private final boolean splitWays;
 
-    private HashBasedTable <Long, Integer, WaySection> geoSections = null;
-//    private Map<String, List<Point>> rawPolygons = null;
-//    private Map<String, List<Point>> tapPolygons = null;
+    private HashBasedTable <Long, Integer, WaySection> waySections = null;
     private Map<Long, Map<Integer, String>> metadata = null;
 
     /**
@@ -90,7 +88,7 @@ public class OsmWays2WaySectionsAdapter {
      * values. The key consists of the ID of the corresponding OSM Way and a (consecutive) number.
      */
     public Table<Long, Integer, WaySection> getWaySections(){
-        return this.geoSections;
+        return this.waySections;
     }
 
     public Map<Long, Map<Integer, String>> getMetadata() throws Exception {
@@ -119,7 +117,7 @@ public class OsmWays2WaySectionsAdapter {
             FileInputStream fileInputStream = new FileInputStream(osmFile);
             OsmElement osmElement = OsmUnmarshaller.unmarshal(fileInputStream, filter, splitWays);
 
-            this.geoSections = HashBasedTable.create();
+            this.waySections = HashBasedTable.create();
             this.metadata = new HashMap<>();
 
             for(WayElement wayElement : osmElement.getWayElements()){
@@ -139,8 +137,8 @@ public class OsmWays2WaySectionsAdapter {
                             nodeID == wayElement.getLastNdElement().getReference()){
 
                         if(points.size() > 1){
-                            this.geoSections.put( wayElement.getID(), ++segmentID,
-                                new WaySection(points, wayElement.getTagValue("name"), wayElement.isOneWay()));
+                            this.waySections.put(wayElement.getID(), ++segmentID,
+                                    new WaySection(points, wayElement.getTagValue("name"), wayElement.isOneWay()));
 
                             Map<Integer, String> tmp = new HashMap<>();
                             tmp.put(COUNTRY_CODE, country == null ? UNKNOWN : country);
@@ -158,7 +156,7 @@ public class OsmWays2WaySectionsAdapter {
             }
 
             LOG.info("Created {} ways with {} sections (duration: {} ms).",
-                    new Object[]{this.metadata.size(), this.geoSections.size(), System.currentTimeMillis() - start});
+                    new Object[]{this.metadata.size(), this.waySections.size(), System.currentTimeMillis() - start});
         }
         catch(UnsupportedEncodingException ex){
             System.err.println("This should never happen!" + ex.getMessage());
