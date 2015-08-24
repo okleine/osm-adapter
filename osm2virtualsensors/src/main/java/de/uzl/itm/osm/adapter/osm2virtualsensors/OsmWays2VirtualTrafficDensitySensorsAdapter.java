@@ -25,33 +25,6 @@ public class OsmWays2VirtualTrafficDensitySensorsAdapter extends OsmWays2WaySect
             OsmWays2VirtualTrafficDensitySensorsAdapter.class.getName()
     );
 
-//    public static final String GRAPH_NAME_TEMPLATE = "http://example.org/virtual-sensors/instances#%s";
-//
-//    private static final StringBuilder STATEMENT_TEMPLATE = new StringBuilder(
-//            "@prefix rs: <http://example.org/ways#> .\n" +
-//                    "@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n" +
-//                    "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n" +
-//                    "@prefix vs: <http://example.org/virtual-sensors/instances#> .\n" +
-//                    "@prefix ssn: <http://purl.oclc.org/NET/ssnx/ssn#> .\n\n" +
-//
-//                    "<http://example.org/virtual-sensors#VirtualTrafficDensitySensor-%s>\n\t" +
-//                    "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>\n\t\t" +
-//                    "<http://example.org/virtual-sensors#VirtualTrafficDensitySensor>\n\n" +
-//
-//                    "vs:5837598-4-1-VirtualTrafficDensitySensor-Observation a ssn:Observation ;\n\t" +
-//                    "ssn:featureOfInterest rs:%s ;\n\t" +
-//                    "ssn:observedProperty vs:%s-Sensor-VirtualProperty ;\n\t" +
-//                    "ssn:observedBy vs:%s-Sensor ;\n\t" +
-//                    "ssn:observedResult vs:%s-VirtualTrafficDensitySensorOutput .\n\n" +
-//
-//                    "rs:%s a ssn:FeatureOfInterest ;\n\t" +
-//                    "vs:virtualProperty vs:%s-Sensor-VirtualProperty .\n\n" +
-//
-//                    "vs:%s-%s-VirtualTrafficDensitySensorProperty a vs:VirtualProperty .\n\n" +
-//
-//                    "vs:%s-VirtualTrafficDensitySensorOutput a vs:VirtualSensorOutput ;\n\t" +
-//                    "ssn:hasValue 0 ."
-//    );
 
 
     private static final String VS_ONTOLOGY =
@@ -63,20 +36,12 @@ public class OsmWays2VirtualTrafficDensitySensorsAdapter extends OsmWays2WaySect
             "vs:VirtualTrafficDensitySensor a rdfs:Class ;\n\t" +
                 "rdfs:subClassOf ssn:Sensor .\n\n" +
 
-            "vs:VirtualSensorOutput a rdfs:Class ;\n\t" +
-                "rdfs:subClassOf ssn:SensorOutput .\n\n" +
-
-            "vs:hasVirtualProperty a rdf:Property ;\n\t" +
-                "rdfs:subPropertyOf ssn:hasProperty .\n\n" +
-
             "vs:trafficDensity a rdfs:Class ;\n\t" +
-                "rdfs:subClassOf ssn:Property .\n\n" +
-
-            "vs:VirtualTrafficDensitySensor a rdfs:Class ;\n\t" +
-                "rdfs:subClassOf ssn:Sensor .";
+                "rdfs:subClassOf ssn:Property .";
 
 
-    public void writeOntologyFile(String directory) throws Exception{
+
+    public static void writeOntologyFile(String directory) throws Exception{
         assureDirectoryExists(directory);
         File file = assureFileExists(directory, "vs-ontology.ttl");
 
@@ -85,6 +50,7 @@ public class OsmWays2VirtualTrafficDensitySensorsAdapter extends OsmWays2WaySect
         writer.flush();
         writer.close();
     }
+    
 
     private static final String QUERY_TEMPLATE =
         "PREFIX veh: <http://example.org/vehicles#>\n" +
