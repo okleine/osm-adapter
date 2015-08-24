@@ -3,8 +3,7 @@ package de.uzl.itm.osm.adapter.osm2virtualsensors;
 import de.uzl.itm.jaxb4osm.tools.WayElementFilter;
 import de.uzl.itm.osm.adapter.osm2geography.WaySection;
 import de.uzl.itm.osm.adapter.osm2geography.OsmWays2WaySectionsAdapter;
-import de.uzl.itm.ssp.jaxb4vs.jaxb.VirtualSensor;
-import de.uzl.itm.ssp.jaxb4vs.jaxb.VirtualSensorList;
+import de.uzl.itm.ssp.jaxb4vs.jaxb.*;
 import de.uzl.itm.ssp.jaxb4vs.tools.VirtualSensorsMarshaller;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.slf4j.Logger;
@@ -58,10 +57,10 @@ public class OsmWays2VirtualTrafficDensitySensorsAdapter extends OsmWays2WaySect
     private static final String VS_ONTOLOGY =
             "@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n" +
             "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n" +
-            "@prefix vs: <http://example.org/virtual-sensors#> .\n" +
+            "@prefix vs: <http://example.org/vs#> .\n" +
             "@prefix ssn: <http://purl.oclc.org/NET/ssnx/ssn#> .\n\n" +
 
-            "vs:VirtualSensor a rdfs:Class ;\n\t" +
+            "vs:VirtualTrafficDensitySensor a rdfs:Class ;\n\t" +
                 "rdfs:subClassOf ssn:Sensor .\n\n" +
 
             "vs:VirtualSensorOutput a rdfs:Class ;\n\t" +
@@ -70,11 +69,11 @@ public class OsmWays2VirtualTrafficDensitySensorsAdapter extends OsmWays2WaySect
             "vs:hasVirtualProperty a rdf:Property ;\n\t" +
                 "rdfs:subPropertyOf ssn:hasProperty .\n\n" +
 
-            "vs:VirtualProperty a rdfs:Class ;\n\t" +
+            "vs:trafficDensity a rdfs:Class ;\n\t" +
                 "rdfs:subClassOf ssn:Property .\n\n" +
 
             "vs:VirtualTrafficDensitySensor a rdfs:Class ;\n\t" +
-                "rdfs:subClassOf vs:VirtualSensor .";
+                "rdfs:subClassOf ssn:Sensor .";
 
 
     public void writeOntologyFile(String directory) throws Exception{
@@ -87,22 +86,40 @@ public class OsmWays2VirtualTrafficDensitySensorsAdapter extends OsmWays2WaySect
         writer.close();
     }
 
-
     private static final String QUERY_TEMPLATE =
-            "PREFIX geo: <http://www.opengis.net/ont/geosparql#>\n" +
-            "PREFIX geof: <http://www.opengis.net/def/function/geosparql/>\n" +
-            "PREFIX osm: <http://example.org/osm#>\n" +
-            "PREFIX veh: <http://example.org/vehicles#>\n\n" +
+        "PREFIX veh: <http://example.org/vehicles#>\n" +
+        "PREFIX osm: <http://example.org/osm#>\n" +
+        "PREFIX geo: <http://www.opengis.net/ont/geosparql#>\n" +
+        "PREFIX geof: <http://www.opengis.net/def/function/geosparql/>\n" +
+        "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n\n" +
 
-            "SELECT ((COUNT(?val) / (?length / 40)) AS ?aggVal) WHERE {\n\t" +
-                "?val a veh:Vehicle .\n\t" +
-                "?val veh:hasLocation ?loc .\n\t" +
-                "?loc geo:asWKT ?point .\n\t" +
-                "osm:WaySectionLane-%s osm:boundary ?bound .\n\t" +
-                "?bound geo:asWKT ?polygon . \n\t" +
-                "osm:WaySectionLane-%s osm:hasLengthInMeter ?length .\n\t" +
-                "FILTER (geof:sfWithin(?point, ?polygon))\n" +
-            "} GROUP BY ?length";
+        "SELECT (xsd:string(IF(COUNT(?veh) = 0, \"low\", IF(COUNT(?veh) / (?length / 40) < 1, \"low\",\n\t" +
+            "IF(COUNT(?veh) / (?length / 40) > 2, \"high\", \"medium\")))) AS ?val) WHERE {\n\t" +
+            "  ?veh a veh:Vehicle .\n\t" +
+            "  ?veh veh:hasLocation ?loc .\n\t" +
+            "  ?loc geo:asWKT ?point .\n\t" +
+            "  osm:WaySectionLane-%s osm:boundary ?bound .\n\t" +
+            "  osm:WaySectionLane-%s osm:hasLengthInMeter ?length .\n\t" +
+            "  ?bound geo:asWKT ?polygon\n\t" +
+            "  FILTER (geof:sfWithin(?point, ?polygon))\n" +
+        "} GROUP BY ?length";
+
+//    private static final String QUERY_TEMPLATE =
+//            "PREFIX geo: <http://www.opengis.net/ont/geosparql#>\n" +
+//            "PREFIX geof: <http://www.opengis.net/def/function/geosparql/>\n" +
+//            "PREFIX osm: <http://example.org/osm#>\n" +
+//            "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n" +
+//            "PREFIX veh: <http://example.org/vehicles#>\n\n" +
+//
+//            "SELECT (xsd:int((COUNT(?veh) / (?length / 40))) AS ?val) WHERE {\n\t" +
+//                "?veh a veh:Vehicle .\n\t" +
+//                "?veh veh:hasLocation ?loc .\n\t" +
+//                "?loc geo:asWKT ?point .\n\t" +
+//                "osm:WaySectionLane-%s osm:boundary ?bound .\n\t" +
+//                "?bound geo:asWKT ?polygon . \n\t" +
+//                "osm:WaySectionLane-%s osm:hasLengthInMeter ?length .\n\t" +
+//                "FILTER (geof:sfWithin(?point, ?polygon))\n" +
+//            "} GROUP BY ?length";
 
 //    private static final String VIRTUAL_SENSOR_NAMESPACE =
 //            "http://example.org/virtual-sensors#";
@@ -111,15 +128,15 @@ public class OsmWays2VirtualTrafficDensitySensorsAdapter extends OsmWays2WaySect
             "VirtualTrafficDensitySensor";
 
     private static final String VIRTUAL_TRAFFIC_DENSITY_SENSOR_TYPE =
-            VIRTUAL_TRAFFIC_DENSITY_SENSOR;
+            "http://example.org/vs#" + VIRTUAL_TRAFFIC_DENSITY_SENSOR;
 
     private static final String SENSOR_NAME_TEMPLATE =
-            VIRTUAL_TRAFFIC_DENSITY_SENSOR_TYPE + "-%s";
+            VIRTUAL_TRAFFIC_DENSITY_SENSOR + "-%s";
 
     private static final String LANE_SECTION_NAME_TEMPLATE =
             "http://example.org/osm#WaySectionLane-%s";
 
-    private VirtualSensorList virtualSensors;
+    private JAXBVirtualSensorsList virtualSensors;
 
     public OsmWays2VirtualTrafficDensitySensorsAdapter(File osmFile, WayElementFilter filter, boolean splitWays)
             throws Exception {
@@ -133,7 +150,7 @@ public class OsmWays2VirtualTrafficDensitySensorsAdapter extends OsmWays2WaySect
         long start = System.currentTimeMillis();
 
         //Create Virtual Sensors
-        this.virtualSensors = new VirtualSensorList();
+        this.virtualSensors = new JAXBVirtualSensorsList();
         for(Long wayID : this.getWaySections().rowKeySet()){
             for(Map.Entry<Integer, WaySection> entry : this.getWaySections().row(wayID).entrySet()){
                 String sectionID = wayID + "-" + entry.getKey();
@@ -154,20 +171,21 @@ public class OsmWays2VirtualTrafficDensitySensorsAdapter extends OsmWays2WaySect
     }
 
 
-    private static VirtualSensor createVirtualSensor(String laneSectionID) {
+    private static JAXBVirtualSensor createVirtualSensor(String laneSectionID) {
 
-        VirtualSensor virtualSensor = new VirtualSensor();
-        virtualSensor.setName(String.format(SENSOR_NAME_TEMPLATE, laneSectionID));
-        virtualSensor.setType(VIRTUAL_TRAFFIC_DENSITY_SENSOR_TYPE);
-        virtualSensor.setFoi(String.format(LANE_SECTION_NAME_TEMPLATE, laneSectionID));
+        JAXBVirtualSensor virtualSensor = new JAXBVirtualSensor();
+        virtualSensor.setSensorName(String.format(SENSOR_NAME_TEMPLATE, laneSectionID));
+        virtualSensor.setSensorType(VIRTUAL_TRAFFIC_DENSITY_SENSOR_TYPE);
+        virtualSensor.setFeatureOfInterest(String.format(LANE_SECTION_NAME_TEMPLATE, laneSectionID));
+        virtualSensor.setObservedProperty("http://example.org/osm#trafficDensity");
 
-        virtualSensor.setQuery(String.format(QUERY_TEMPLATE, laneSectionID, laneSectionID));
+        virtualSensor.setSparqlQuery(String.format(QUERY_TEMPLATE, laneSectionID, laneSectionID));
 
         return virtualSensor;
     }
 
 
-    public VirtualSensorList getVirtualSensors(){
+    public JAXBVirtualSensorsList getVirtualSensors(){
         return this.virtualSensors;
     }
 
@@ -213,10 +231,10 @@ public class OsmWays2VirtualTrafficDensitySensorsAdapter extends OsmWays2WaySect
 
         configureDefaultLogging();
 
-        String directory = "/home/olli/Dokumente/Dissertation/Experimente/OSM/HL2015";
+        String directory = "/home/olli/Dokumente/Dissertation/Experimente/OSM/HL";
 
         File osmFile = new File(directory, "map.osm");
-        WayElementFilter wayFilter = WayElementFilter.STREETS;
+        WayElementFilter wayFilter = WayElementFilter.HIGHWAYS;
         OsmWays2VirtualTrafficDensitySensorsAdapter adapter = new OsmWays2VirtualTrafficDensitySensorsAdapter(
                 osmFile, wayFilter, true
         );

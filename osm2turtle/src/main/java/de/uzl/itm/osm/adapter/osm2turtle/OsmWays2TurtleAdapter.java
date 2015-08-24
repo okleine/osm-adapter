@@ -251,7 +251,7 @@ public class OsmWays2TurtleAdapter extends OsmWays2WaySectionsAdapter {
 
     public static void main(String[] args) throws Exception{
 
-        String directory = "/home/olli/Dokumente/Dissertation/Experimente/OSM/HL2015";
+        String directory = "/home/olli/Dokumente/Dissertation/Experimente/OSM/HL";
         File osmFile = new File(directory, "map.osm");
 
         WayElementFilter wayFilter = WayElementFilter.STREETS;

@@ -100,11 +100,7 @@ public class OsmWays2WaySectionsAdapter {
     }
 
     /**
-     * Creates a {@link java.util.Map} with IDs based on {@link de.uzl.itm.jaxb4osm.jaxb.WayElement#getID()}
-     * as key and a {@link WaySection} as value.
-     *
-     * @return a {@link java.util.Map} with IDs based on {@link de.uzl.itm.jaxb4osm.jaxb.WayElement#getID()}
-     * as key and a {@link WaySection} as value
+     * Creates {@link de.uzl.itm.osm.adapter.osm2geography.WaySection}s and metadata
      */
     public void initialize() throws Exception {
         createWaySectionsAndMetadata();
@@ -155,8 +151,20 @@ public class OsmWays2WaySectionsAdapter {
                 }
             }
 
-            LOG.info("Created {} ways with {} sections (duration: {} ms).",
-                    new Object[]{this.metadata.size(), this.waySections.size(), System.currentTimeMillis() - start});
+            long duration = System.currentTimeMillis() - start;
+
+            int lanes = 0;
+            for(WaySection waySection : this.waySections.values()){
+                if(waySection.isOneWay()) {
+                    lanes += 1;
+                }
+                else{
+                    lanes += 2;
+                }
+            }
+
+            LOG.info("Created {} ways with {} sections with {} lanes (duration: {} ms).",
+                    new Object[]{this.metadata.size(), this.waySections.size(), lanes, duration});
         }
         catch(UnsupportedEncodingException ex){
             System.err.println("This should never happen!" + ex.getMessage());
